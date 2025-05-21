@@ -1,0 +1,85 @@
+stages:
+  - install_tools
+  - test
+  - security
+  - build
+  - docker
+  - deploy
+
+install_mvn_trivy_docker_kubectl:
+  stage: install_tools
+  script:
+    - sudo apt-get update -y
+    - sudo apt-get install -y openjdk-17-jre-headless
+    - sudo apt-get install -y maven
+    - sudo apt-get install -y docker.io
+    - sudo usermod -aG docker $USER
+    - sudo apt-get install -y wget apt-transport-https gnupg lsb-release
+    - wget -qO - https://aquasecurity.github.io/trivy-repo/deb/public.key | gpg --dearmor | sudo tee /etc/apt/trusted.gpg.d/trivy.gpg > /dev/null
+    - echo "deb https://aquasecurity.github.io/trivy-repo/deb $(lsb_release -sc) main" | sudo tee /etc/apt/sources.list.d/trivy.list
+    - sudo apt-get update
+    - sudo apt-get install -y trivy
+    - sudo snap install kubectl --classic
+  tags:
+    - self-hosted
+
+unit-test-job:
+  stage: test
+  script:
+    - mvn test
+  tags:
+    - self-hosted
+
+sonarqube-check:
+  image:
+    name: \"sonarsource/sonar-scanner-cli:latest\"
+  variables:
+    SONAR_USER_HOME: \"${CI_PROJECT_DIR}/.sonar\"
+    GIT_DEPTH: \"0\"
+    SONAR_HOST_URL: \"$SONAR_HOST_URL\"
+    SONAR_TOKEN: \"$SONAR_TOKEN\"
+  cache:
+    key: \"${CI_JOB_NAME}\"
+    paths:
+      - .sonar/cache
+  script:
+    - sonar-scanner
+  allow_failure: true
+  only:
+    - main
+
+build_app:
+  stage: build
+  script:
+    - mvn package
+  tags:
+    - self-hosted
+  only:
+    - main
+
+build_and_tag_push_image:
+  stage: docker
+  script:
+    - docker login -u $DOCKER_USERNAME -p $DOCKER_PASSWORD
+    - mvn package
+    - docker build -t zohaib56/boardgamelab:latest .
+    - docker push zohaib56/boardgamelab:latest
+  tags:
+    - self-hosted
+  only:
+    - main
+
+K8s-deploy:
+  stage: deploy
+  variables:
+    KUBECONFIG_PATH: /home/ubuntu/.kube/config
+  before_script:
+    - mkdir -p $(dirname \"$KUBECONFIG_PATH\")
+    - echo \"$KUBECONFIG_CONTENT\" | base64 -d > \"$KUBECONFIG_PATH\"
+    - export KUBECONFIG=\"$KUBECONFIG_PATH\"
+  script:
+    - kubectl apply -f deployment-service.yaml
+  tags:
+    - self-hosted
+  only:
+    - main
