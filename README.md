@@ -1,0 +1,1 @@
+# CI-CD-Pipeline-for-E-commerce-Platform-Using-GitLab-Maven-Trivy-SonarQube-Docker
