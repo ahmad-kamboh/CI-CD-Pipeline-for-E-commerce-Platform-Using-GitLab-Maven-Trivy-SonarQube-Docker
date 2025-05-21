@@ -1,0 +1,10 @@
+target/
+*.log
+*.md
+.git
+.gitignore
+Dockerfile
+.gitlab-ci.yml
+command.sh
+README.md
+k8s/
