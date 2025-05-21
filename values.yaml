@@ -1,0 +1,11 @@
+replicaCount: 2
+
+image:
+  repository: zohaib56/boardgamelab
+  tag: latest
+  pullPolicy: IfNotPresent
+
+service:
+  type: NodePort
+  port: 8080
+  nodePort: 30036
