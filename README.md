@@ -7,7 +7,7 @@ This repository contains a complete DevOps pipeline setup for the `BoardGameLab`
 
 ---
 
-![WhatsApp Image 2025-05-21 at 09 37 58_a1aded5d](https://github.com/user-attachments/assets/08836e9a-9761-41c5-97db-30152a8d1e61)
+
 
 ## 🚀 Project Overview
 
@@ -56,7 +56,6 @@ The goal of this project is to:
 ├── values.yaml               # K8s config values (used for Helm)
 
 
-![WhatsApp Image 2025-05-21 at 09 37 58_7d76bde0](https://github.com/user-attachments/assets/ec678237-e1a8-429d-ad7e-8440db649ad8)
 
 📞 Contact Information
 
